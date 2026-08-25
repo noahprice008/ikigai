@@ -43,7 +43,7 @@ export function VennDiagram({ state, focused }: Props) {
         </filter>
       </defs>
 
-      <g style={{ mixBlendMode: "multiply" }} className="dark:[mix-blend-mode:screen]">
+      <g className="[mix-blend-mode:multiply] dark:[mix-blend-mode:screen]">
         {DIMENSION_ORDER.map((key) => {
           const dim = state.dimensions[key];
           const pos = CIRCLE_POSITIONS[key];
