@@ -109,6 +109,18 @@ export function normalize(raw: unknown): IkigaiState | null {
   const input = raw as Partial<IkigaiState>;
   const state = emptyState();
   if (input.theme === "dark" || input.theme === "light") state.theme = input.theme;
+  state.premium = input.premium === true;
+  if (Array.isArray(input.history)) {
+    state.history = input.history
+      .filter((snap) => snap && typeof snap.at === "number")
+      .map((snap) => ({
+        at: snap.at,
+        note: typeof snap.note === "string" ? snap.note : undefined,
+        avgs: coerceRecord(snap.avgs),
+        counts: coerceRecord(snap.counts),
+      }))
+      .sort((a, b) => a.at - b.at);
+  }
   const dims = input.dimensions;
   if (typeof dims !== "object" || dims === null) return state;
   for (const key of DIMENSION_ORDER) {
