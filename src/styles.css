@@ -125,6 +125,12 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  svg {
+    shape-rendering: geometricPrecision;
   }
 
   h1,
@@ -175,4 +181,18 @@
   transform-box: fill-box;
   transform-origin: center;
   animation: ikigai-breathe 5s ease-in-out infinite;
+}
+
+@keyframes ikigai-breathe-soft {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@utility ikigai-breathe-soft {
+  animation: ikigai-breathe-soft 4.2s ease-in-out infinite;
 }

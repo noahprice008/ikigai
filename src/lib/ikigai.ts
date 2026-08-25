@@ -4,9 +4,18 @@ export type Item = { id: string; label: string; score: number };
 
 export type Dimension = { items: Item[]; avg_score: number };
 
+export type Snapshot = {
+  at: number;
+  avgs: Record<DimensionKey, number>;
+  counts: Record<DimensionKey, number>;
+  note?: string | undefined;
+};
+
 export type IkigaiState = {
   dimensions: Record<DimensionKey, Dimension>;
   theme: "light" | "dark";
+  history: Snapshot[];
+  premium: boolean;
 };
 
 export const DIMENSION_ORDER: DimensionKey[] = ["love", "good_at", "needs", "paid_for"];
@@ -68,6 +77,8 @@ export function emptyState(): IkigaiState {
       paid_for: { items: [], avg_score: 0 },
     },
     theme: "light",
+    history: [],
+    premium: false,
   };
 }
 
@@ -98,6 +109,18 @@ export function normalize(raw: unknown): IkigaiState | null {
   const input = raw as Partial<IkigaiState>;
   const state = emptyState();
   if (input.theme === "dark" || input.theme === "light") state.theme = input.theme;
+  state.premium = input.premium === true;
+  if (Array.isArray(input.history)) {
+    state.history = input.history
+      .filter((snap) => snap && typeof snap.at === "number")
+      .map((snap) => ({
+        at: snap.at,
+        note: typeof snap.note === "string" ? snap.note : undefined,
+        avgs: coerceRecord(snap.avgs),
+        counts: coerceRecord(snap.counts),
+      }))
+      .sort((a, b) => a.at - b.at);
+  }
   const dims = input.dimensions;
   if (typeof dims !== "object" || dims === null) return state;
   for (const key of DIMENSION_ORDER) {
@@ -194,4 +217,86 @@ export function ikigaiStrength(state: IkigaiState): number {
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+
+/* ---------- history + warmth ---------- */
+
+function coerceRecord(raw: unknown): Record<DimensionKey, number> {
+  const out = { love: 0, good_at: 0, needs: 0, paid_for: 0 } as Record<DimensionKey, number>;
+  if (typeof raw !== "object" || raw === null) return out;
+  for (const key of DIMENSION_ORDER) {
+    const value = Number((raw as Record<string, unknown>)[key]);
+    out[key] = Number.isFinite(value) ? value : 0;
+  }
+  return out;
+}
+
+export const HISTORY_LIMIT = 60;
+
+export function snapshotOf(state: IkigaiState, note?: string): Snapshot {
+  const avgs = {} as Record<DimensionKey, number>;
+  const counts = {} as Record<DimensionKey, number>;
+  for (const key of DIMENSION_ORDER) {
+    avgs[key] = state.dimensions[key].avg_score;
+    counts[key] = state.dimensions[key].items.length;
+  }
+  return note ? { at: Date.now(), avgs, counts, note } : { at: Date.now(), avgs, counts };
+}
+
+export function sameShape(a: Snapshot, b: Snapshot): boolean {
+  return DIMENSION_ORDER.every((key) => a.avgs[key] === b.avgs[key] && a.counts[key] === b.counts[key]);
+}
+
+/** Rebuild a renderable state from a stored snapshot. */
+export function stateFromSnapshot(snap: Snapshot, theme: IkigaiState["theme"]): IkigaiState {
+  const state = emptyState();
+  state.theme = theme;
+  for (const key of DIMENSION_ORDER) {
+    state.dimensions[key] = {
+      avg_score: snap.avgs[key],
+      items: Array.from({ length: snap.counts[key] }, (_, index) => ({
+        id: `${key}-hist-${index}`,
+        label: "",
+        score: Math.round(snap.avgs[key]) || 1,
+      })),
+    };
+  }
+  return state;
+}
+
+export const JOURNAL_PROMPTS: string[] = [
+  "What felt effortless today?",
+  "Which entry would you defend to a stranger?",
+  "Where did your work meet someone else's need?",
+  "What did you avoid, and what did that cost?",
+  "Name one thing worth being paid for that you gave away.",
+  "What would you keep doing with no audience at all?",
+  "Which circle is quietly asking for attention?",
+];
+
+export function promptFor(seed: number): string {
+  return JOURNAL_PROMPTS[Math.abs(Math.round(seed)) % JOURNAL_PROMPTS.length]!;
+}
+
+/**
+ * Warmth radiating toward the centre: rises well before circles truly overlap,
+ * so progress is visible on the way to alignment.
+ */
+export function zoneWarmth(state: IkigaiState, zone: ZoneKey): number {
+  const [a, b] = ZONES[zone].pair;
+  const da = state.dimensions[a];
+  const db = state.dimensions[b];
+  if (da.items.length === 0 && db.items.length === 0) return 0;
+  const reach = radiusFor(da.avg_score) + radiusFor(db.avg_score);
+  return clamp01((reach - ADJACENT_DISTANCE * 0.62) / (ADJACENT_DISTANCE * 0.55));
+}
+
+export function coreWarmth(state: IkigaiState): number {
+  let sum = 0;
+  for (const key of DIMENSION_ORDER) {
+    const dim = state.dimensions[key];
+    if (dim.items.length === 0) continue;
+    sum += clamp01(radiusFor(dim.avg_score) / (VENN.offset + 26));
+  }
+  return clamp01(sum / 4);
 }

@@ -1,14 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { DimensionPanel } from "@/components/ikigai/DimensionPanel";
 import { DiagramCaption, VennDiagram } from "@/components/ikigai/VennDiagram";
+import { PremiumButton, PremiumDialog } from "@/components/ikigai/PremiumDialog";
+import { TimelineSlider } from "@/components/ikigai/TimelineSlider";
 import {
   DIMENSION_ORDER,
+  HISTORY_LIMIT,
   STORAGE_KEY,
   average,
   normalize,
+  sameShape,
   seedState,
+  snapshotOf,
+  stateFromSnapshot,
   type DimensionKey,
   type IkigaiState,
 } from "@/lib/ikigai";
@@ -39,6 +45,12 @@ function IkigaiPage() {
   const [state, setState] = useState<IkigaiState>(() => seedState());
   const [hydrated, setHydrated] = useState(false);
   const [focused, setFocused] = useState<DimensionKey | null>(null);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [cursor, setCursor] = useState<number | null>(null);
+  const [note, setNote] = useState("");
+  const [premiumOpen, setPremiumOpen] = useState(false);
+  const noteRef = useRef(note);
+  noteRef.current = note;
 
   useEffect(() => {
     try {
@@ -66,8 +78,28 @@ function IkigaiPage() {
     document.documentElement.classList.toggle("dark", state.theme === "dark");
   }, [state.theme]);
 
+  /* record a snapshot once edits settle */
+  useEffect(() => {
+    if (!hydrated) return;
+    const timer = window.setTimeout(() => {
+      setState((prev) => {
+        const snap = snapshotOf(prev, noteRef.current.trim() || undefined);
+        const last = prev.history[prev.history.length - 1];
+        if (last && sameShape(last, snap) && (last.note ?? "") === (snap.note ?? "")) return prev;
+        return { ...prev, history: [...prev.history, snap].slice(-HISTORY_LIMIT) };
+      });
+    }, 2000);
+    return () => window.clearTimeout(timer);
+  }, [state.dimensions, note, hydrated]);
+
   const mutate = useCallback(
-    (key: DimensionKey, updater: (items: IkigaiState["dimensions"][DimensionKey]["items"]) => IkigaiState["dimensions"][DimensionKey]["items"]) => {
+    (
+      key: DimensionKey,
+      updater: (
+        items: IkigaiState["dimensions"][DimensionKey]["items"],
+      ) => IkigaiState["dimensions"][DimensionKey]["items"],
+    ) => {
+      setCursor(null);
       setState((prev) => {
         const items = updater(prev.dimensions[key].items);
         return {
@@ -82,6 +114,12 @@ function IkigaiPage() {
     [],
   );
 
+  const viewedState = useMemo(() => {
+    const snap = cursor === null ? undefined : state.history[cursor];
+    return snap ? stateFromSnapshot(snap, state.theme) : state;
+  }, [cursor, state]);
+  const viewingPast = cursor !== null && state.history[cursor] !== undefined;
+
   return (
     <main className="min-h-screen paper-grain">
       <div className="mx-auto max-w-[104rem] px-5 pb-16 pt-8 sm:px-8 lg:px-12">
@@ -94,16 +132,19 @@ function IkigaiPage() {
               Everything saves itself.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              setState((prev) => ({ ...prev, theme: prev.theme === "dark" ? "light" : "dark" }))
-            }
-            aria-label={`Switch to ${state.theme === "dark" ? "light" : "dark"} mode`}
-            className="grid size-10 shrink-0 place-items-center rounded-full border bg-card text-foreground shadow-soft transition-colors hover:bg-accent"
-          >
-            {state.theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <PremiumButton premium={state.premium} onClick={() => setPremiumOpen(true)} />
+            <button
+              type="button"
+              onClick={() =>
+                setState((prev) => ({ ...prev, theme: prev.theme === "dark" ? "light" : "dark" }))
+              }
+              aria-label={`Switch to ${state.theme === "dark" ? "light" : "dark"} mode`}
+              className="grid size-10 shrink-0 place-items-center rounded-full border bg-card text-foreground shadow-soft transition-colors hover:bg-accent"
+            >
+              {state.theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-12">
@@ -140,13 +181,39 @@ function IkigaiPage() {
           <div className="order-1 lg:order-2">
             <div className="lg:sticky lg:top-8">
               <div className="flex flex-col items-center gap-5 rounded-3xl border bg-canvas px-3 py-8 shadow-soft sm:px-8">
-                <VennDiagram state={state} focused={focused} />
-                <DiagramCaption state={state} />
+                {viewingPast && (
+                  <p className="eyebrow text-muted-foreground">Looking back</p>
+                )}
+                <VennDiagram state={viewedState} focused={viewingPast ? null : focused} />
+                <DiagramCaption state={viewedState} />
               </div>
             </div>
           </div>
         </div>
+
+        <TimelineSlider
+          open={timelineOpen}
+          onOpenChange={setTimelineOpen}
+          history={state.history}
+          theme={state.theme}
+          cursor={cursor}
+          onCursor={setCursor}
+          note={note}
+          onNote={setNote}
+          premium={state.premium}
+          onUpgrade={() => setPremiumOpen(true)}
+        />
       </div>
+
+      <PremiumDialog
+        open={premiumOpen}
+        onOpenChange={setPremiumOpen}
+        premium={state.premium}
+        onActivate={() => {
+          setState((prev) => ({ ...prev, premium: true }));
+          setPremiumOpen(false);
+        }}
+      />
     </main>
   );
 }

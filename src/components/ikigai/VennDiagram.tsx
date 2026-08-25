@@ -4,9 +4,11 @@ import {
   DIMENSION_ORDER,
   VENN,
   ZONES,
+  coreWarmth,
   ikigaiStrength,
   radiusFor,
   zoneStrength,
+  zoneWarmth,
   type DimensionKey,
   type IkigaiState,
   type ZoneKey,
@@ -17,31 +19,92 @@ type Props = {
   focused: DimensionKey | null;
 };
 
+const ZONE_KEYS = Object.keys(ZONES) as ZoneKey[];
 
 export function VennDiagram({ state, focused }: Props) {
   const core = ikigaiStrength(state);
+  const warmth = coreWarmth(state);
 
   return (
     <svg
       viewBox={`-30 -46 ${VENN.size + 60} ${VENN.size + 92}`}
       className="h-auto w-full max-w-[34rem] select-none overflow-visible"
+      shapeRendering="geometricPrecision"
+      textRendering="geometricPrecision"
       role="img"
       aria-label="Ikigai Venn diagram reflecting your current scores"
     >
       <defs>
-        <radialGradient id="ikigai-core" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="var(--ikigai)" stopOpacity="0.95" />
-          <stop offset="55%" stopColor="var(--ikigai)" stopOpacity="0.45" />
+        {/* warmth radiating from the centre outwards */}
+        <radialGradient id="ikigai-warmth" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="var(--ikigai)" stopOpacity="0.9" />
+          <stop offset="45%" stopColor="var(--ikigai)" stopOpacity="0.45" />
           <stop offset="100%" stopColor="var(--ikigai)" stopOpacity="0" />
         </radialGradient>
-        <filter id="ikigai-glow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="7" result="blur" />
+        <radialGradient id="ikigai-core" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="var(--ikigai)" stopOpacity="0.98" />
+          <stop offset="55%" stopColor="var(--ikigai)" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="var(--ikigai)" stopOpacity="0" />
+        </radialGradient>
+        <filter
+          id="ikigai-glow"
+          x="-60%"
+          y="-60%"
+          width="220%"
+          height="220%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur stdDeviation="6" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+
+        {DIMENSION_ORDER.map((key) => (
+          <clipPath key={key} id={`clip-${key}`}>
+            <circle
+              cx={CIRCLE_POSITIONS[key].cx}
+              cy={CIRCLE_POSITIONS[key].cy}
+              r={radiusFor(state.dimensions[key].avg_score)}
+            />
+          </clipPath>
+        ))}
+
+        {ZONE_KEYS.map((zoneKey) => {
+          const zone = ZONES[zoneKey];
+          const [a, b] = zone.pair;
+          const w = zoneWarmth(state, zoneKey);
+          return (
+            <linearGradient
+              key={zoneKey}
+              id={`zone-${zoneKey}`}
+              gradientUnits="userSpaceOnUse"
+              x1={CIRCLE_POSITIONS[a].cx}
+              y1={CIRCLE_POSITIONS[a].cy}
+              x2={CIRCLE_POSITIONS[b].cx}
+              y2={CIRCLE_POSITIONS[b].cy}
+            >
+              <stop offset="0%" stopColor={DIMENSION_META[a].colorVar} stopOpacity={0.2 + w * 0.5} />
+              <stop offset="50%" stopColor="var(--ikigai)" stopOpacity={0.15 + w * 0.7} />
+              <stop offset="100%" stopColor={DIMENSION_META[b].colorVar} stopOpacity={0.2 + w * 0.5} />
+            </linearGradient>
+          );
+        })}
       </defs>
+
+      {/* pre-overlap heat: warmth reaches inward long before the circles meet */}
+      {warmth > 0 && (
+        <circle
+          cx={VENN.center}
+          cy={VENN.center}
+          r={48 + warmth * 78}
+          fill="url(#ikigai-warmth)"
+          opacity={warmth * 0.5}
+          className={warmth > 0.5 ? "ikigai-breathe" : undefined}
+          style={{ transition: "r 600ms cubic-bezier(.22,.9,.28,1), opacity 600ms" }}
+        />
+      )}
 
       <g className="[mix-blend-mode:multiply] dark:[mix-blend-mode:screen]">
         {DIMENSION_ORDER.map((key) => {
@@ -60,10 +123,48 @@ export function VennDiagram({ state, focused }: Props) {
               fillOpacity={empty ? 0.07 : dimmed ? 0.12 : "var(--venn-fill-opacity)"}
               stroke={DIMENSION_META[key].colorVar}
               strokeOpacity={empty ? 0.3 : dimmed ? 0.28 : "var(--venn-stroke-opacity)"}
-              strokeWidth={focused === key ? 2.4 : 1.2}
+              strokeWidth={focused === key ? 2.2 : 1.1}
               strokeDasharray={empty ? "3 5" : undefined}
-              style={{ transition: "r 500ms cubic-bezier(.22,.9,.28,1), fill-opacity 300ms, stroke-opacity 300ms, stroke-width 300ms" }}
+              vectorEffect="non-scaling-stroke"
+              style={{
+                transition:
+                  "r 500ms cubic-bezier(.22,.9,.28,1), fill-opacity 300ms, stroke-opacity 300ms, stroke-width 300ms",
+              }}
             />
+          );
+        })}
+
+        {/* intersection lenses — saturate and pulse as scores rise */}
+        {ZONE_KEYS.map((zoneKey) => {
+          const zone = ZONES[zoneKey];
+          const [a, b] = zone.pair;
+          const strength = zoneStrength(state, zoneKey);
+          const w = zoneWarmth(state, zoneKey);
+          if (strength <= 0) return null;
+          const related = focused === null || zone.pair.includes(focused);
+          return (
+            <g key={zoneKey} clipPath={`url(#clip-${a})`}>
+              <circle
+                cx={CIRCLE_POSITIONS[b].cx}
+                cy={CIRCLE_POSITIONS[b].cy}
+                r={radiusFor(state.dimensions[b].avg_score)}
+                fill={`url(#zone-${zoneKey})`}
+                opacity={(0.35 + strength * 0.65) * (related ? 1 : 0.35)}
+                className={strength > 0.45 ? "ikigai-breathe-soft" : undefined}
+                style={{ transition: "r 500ms cubic-bezier(.22,.9,.28,1), opacity 400ms" }}
+              />
+              <circle
+                cx={CIRCLE_POSITIONS[b].cx}
+                cy={CIRCLE_POSITIONS[b].cy}
+                r={radiusFor(state.dimensions[b].avg_score)}
+                fill="none"
+                stroke="var(--ikigai)"
+                strokeOpacity={w * 0.4 * (related ? 1 : 0.3)}
+                strokeWidth={1}
+                vectorEffect="non-scaling-stroke"
+                style={{ transition: "all 500ms" }}
+              />
+            </g>
           );
         })}
       </g>
@@ -81,20 +182,25 @@ export function VennDiagram({ state, focused }: Props) {
             fill="url(#ikigai-core)"
             filter="url(#ikigai-glow)"
           />
-          <text
-            x={VENN.center}
-            y={VENN.center + 4}
-            textAnchor="middle"
-            className="fill-foreground font-display text-[15px] tracking-tight"
-          >
-            Ikigai
-          </text>
         </g>
       )}
 
-      {(Object.keys(ZONES) as ZoneKey[]).map((zoneKey) => {
+      {core > 0 && (
+        <text
+          x={VENN.center}
+          y={VENN.center + 4}
+          textAnchor="middle"
+          className="fill-foreground font-display text-[15px] tracking-tight"
+          opacity={0.5 + core * 0.5}
+        >
+          Ikigai
+        </text>
+      )}
+
+      {ZONE_KEYS.map((zoneKey) => {
         const zone = ZONES[zoneKey];
         const strength = zoneStrength(state, zoneKey);
+        const w = zoneWarmth(state, zoneKey);
         const related = focused === null || zone.pair.includes(focused);
         return (
           <text
@@ -105,7 +211,7 @@ export function VennDiagram({ state, focused }: Props) {
             className="fill-foreground text-[10.5px] font-semibold uppercase"
             style={{
               letterSpacing: "0.14em",
-              opacity: (0.18 + strength * 0.7) * (related ? 1 : 0.35),
+              opacity: (0.18 + Math.max(strength, w * 0.8) * 0.7) * (related ? 1 : 0.35),
               transition: "opacity 400ms",
             }}
           >
@@ -158,11 +264,13 @@ export function VennDiagram({ state, focused }: Props) {
 
 export function DiagramCaption({ state }: { state: IkigaiState }) {
   const core = ikigaiStrength(state);
+  const warmth = coreWarmth(state);
   if (core <= 0) {
     return (
       <p className="max-w-sm text-center text-sm leading-relaxed text-muted-foreground">
-        Add a few entries to each of the four dimensions. The centre only lights up when all four
-        circles genuinely reach one another.
+        {warmth > 0.35
+          ? "Warmth is gathering in the middle — the circles are reaching for one another."
+          : "Add a few entries to each of the four dimensions. The centre warms as your averages rise."}
       </p>
     );
   }
