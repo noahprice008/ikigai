@@ -77,6 +77,8 @@ export function emptyState(): IkigaiState {
       paid_for: { items: [], avg_score: 0 },
     },
     theme: "light",
+    history: [],
+    premium: false,
   };
 }
 
