@@ -17,14 +17,6 @@ type Props = {
   focused: DimensionKey | null;
 };
 
-const LABEL_OFFSET = 214;
-
-const OUTER_LABELS: Record<DimensionKey, { x: number; y: number; anchor: "middle" }> = {
-  love: { x: VENN.center, y: VENN.center - LABEL_OFFSET + 4, anchor: "middle" },
-  good_at: { x: VENN.center, y: VENN.center - LABEL_OFFSET + 24, anchor: "middle" },
-  needs: { x: VENN.center, y: VENN.center + LABEL_OFFSET - 12, anchor: "middle" },
-  paid_for: { x: VENN.center, y: VENN.center + LABEL_OFFSET + 8, anchor: "middle" },
-};
 
 export function VennDiagram({ state, focused }: Props) {
   const core = ikigaiStrength(state);
