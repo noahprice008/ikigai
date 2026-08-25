@@ -4,9 +4,18 @@ export type Item = { id: string; label: string; score: number };
 
 export type Dimension = { items: Item[]; avg_score: number };
 
+export type Snapshot = {
+  at: number;
+  avgs: Record<DimensionKey, number>;
+  counts: Record<DimensionKey, number>;
+  note?: string;
+};
+
 export type IkigaiState = {
   dimensions: Record<DimensionKey, Dimension>;
   theme: "light" | "dark";
+  history: Snapshot[];
+  premium: boolean;
 };
 
 export const DIMENSION_ORDER: DimensionKey[] = ["love", "good_at", "needs", "paid_for"];
