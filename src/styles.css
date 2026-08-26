@@ -196,3 +196,26 @@
 @utility ikigai-breathe-soft {
   animation: ikigai-breathe-soft 4.2s ease-in-out infinite;
 }
+
+@keyframes ikigai-heartbeat {
+  0% {
+    opacity: 0.62;
+  }
+  12% {
+    opacity: 1;
+  }
+  24% {
+    opacity: 0.78;
+  }
+  34% {
+    opacity: 0.96;
+  }
+  55%,
+  100% {
+    opacity: 0.62;
+  }
+}
+
+@utility ikigai-heartbeat {
+  animation: ikigai-heartbeat 4.6s cubic-bezier(0.4, 0, 0.5, 1) infinite;
+}

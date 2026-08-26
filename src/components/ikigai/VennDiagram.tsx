@@ -71,26 +71,8 @@ export function VennDiagram({ state, focused }: Props) {
           </clipPath>
         ))}
 
-        {ZONE_KEYS.map((zoneKey) => {
-          const zone = ZONES[zoneKey];
-          const [a, b] = zone.pair;
-          const w = zoneWarmth(state, zoneKey);
-          return (
-            <linearGradient
-              key={zoneKey}
-              id={`zone-${zoneKey}`}
-              gradientUnits="userSpaceOnUse"
-              x1={CIRCLE_POSITIONS[a].cx}
-              y1={CIRCLE_POSITIONS[a].cy}
-              x2={CIRCLE_POSITIONS[b].cx}
-              y2={CIRCLE_POSITIONS[b].cy}
-            >
-              <stop offset="0%" stopColor={DIMENSION_META[a].colorVar} stopOpacity={0.2 + w * 0.5} />
-              <stop offset="50%" stopColor="var(--ikigai)" stopOpacity={0.15 + w * 0.7} />
-              <stop offset="100%" stopColor={DIMENSION_META[b].colorVar} stopOpacity={0.2 + w * 0.5} />
-            </linearGradient>
-          );
-        })}
+
+
       </defs>
 
       {/* pre-overlap heat: warmth reaches inward long before the circles meet */}
@@ -134,12 +116,11 @@ export function VennDiagram({ state, focused }: Props) {
           );
         })}
 
-        {/* intersection lenses — saturate and pulse as scores rise */}
+        {/* intersection lenses — soft, unsaturated overlap with a slow heartbeat */}
         {ZONE_KEYS.map((zoneKey) => {
           const zone = ZONES[zoneKey];
           const [a, b] = zone.pair;
           const strength = zoneStrength(state, zoneKey);
-          const w = zoneWarmth(state, zoneKey);
           if (strength <= 0) return null;
           const related = focused === null || zone.pair.includes(focused);
           return (
@@ -148,25 +129,19 @@ export function VennDiagram({ state, focused }: Props) {
                 cx={CIRCLE_POSITIONS[b].cx}
                 cy={CIRCLE_POSITIONS[b].cy}
                 r={radiusFor(state.dimensions[b].avg_score)}
-                fill={`url(#zone-${zoneKey})`}
-                opacity={(0.35 + strength * 0.65) * (related ? 1 : 0.35)}
-                className={strength > 0.45 ? "ikigai-breathe-soft" : undefined}
-                style={{ transition: "r 500ms cubic-bezier(.22,.9,.28,1), opacity 400ms" }}
-              />
-              <circle
-                cx={CIRCLE_POSITIONS[b].cx}
-                cy={CIRCLE_POSITIONS[b].cy}
-                r={radiusFor(state.dimensions[b].avg_score)}
-                fill="none"
-                stroke="var(--ikigai)"
-                strokeOpacity={w * 0.4 * (related ? 1 : 0.3)}
-                strokeWidth={1}
-                vectorEffect="non-scaling-stroke"
-                style={{ transition: "all 500ms" }}
+                fill={DIMENSION_META[b].colorVar}
+                fillOpacity="var(--venn-fill-opacity)"
+                opacity={related ? 1 : 0.35}
+                className="ikigai-heartbeat"
+                style={{
+                  animationDelay: `${ZONE_KEYS.indexOf(zoneKey) * 0.15}s`,
+                  transition: "r 500ms cubic-bezier(.22,.9,.28,1), opacity 400ms",
+                }}
               />
             </g>
           );
         })}
+
       </g>
 
       {core > 0 && (
