@@ -19,7 +19,7 @@ import {
   type IkigaiState,
 } from "@/lib/ikigai";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
       { title: "My Ikigai Map — A Live Reflection Diagram" },
