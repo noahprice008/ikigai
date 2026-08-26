@@ -71,26 +71,8 @@ export function VennDiagram({ state, focused }: Props) {
           </clipPath>
         ))}
 
-        {ZONE_KEYS.map((zoneKey) => {
-          const zone = ZONES[zoneKey];
-          const [a, b] = zone.pair;
-          const w = zoneWarmth(state, zoneKey);
-          return (
-            <linearGradient
-              key={zoneKey}
-              id={`zone-${zoneKey}`}
-              gradientUnits="userSpaceOnUse"
-              x1={CIRCLE_POSITIONS[a].cx}
-              y1={CIRCLE_POSITIONS[a].cy}
-              x2={CIRCLE_POSITIONS[b].cx}
-              y2={CIRCLE_POSITIONS[b].cy}
-            >
-              <stop offset="0%" stopColor={DIMENSION_META[a].colorVar} stopOpacity={0.2 + w * 0.5} />
-              <stop offset="50%" stopColor="var(--ikigai)" stopOpacity={0.15 + w * 0.7} />
-              <stop offset="100%" stopColor={DIMENSION_META[b].colorVar} stopOpacity={0.2 + w * 0.5} />
-            </linearGradient>
-          );
-        })}
+
+
       </defs>
 
       {/* pre-overlap heat: warmth reaches inward long before the circles meet */}
