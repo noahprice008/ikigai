@@ -116,12 +116,11 @@ export function VennDiagram({ state, focused }: Props) {
           );
         })}
 
-        {/* intersection lenses — saturate and pulse as scores rise */}
+        {/* intersection lenses — soft, unsaturated overlap with a slow heartbeat */}
         {ZONE_KEYS.map((zoneKey) => {
           const zone = ZONES[zoneKey];
           const [a, b] = zone.pair;
           const strength = zoneStrength(state, zoneKey);
-          const w = zoneWarmth(state, zoneKey);
           if (strength <= 0) return null;
           const related = focused === null || zone.pair.includes(focused);
           return (
@@ -130,25 +129,19 @@ export function VennDiagram({ state, focused }: Props) {
                 cx={CIRCLE_POSITIONS[b].cx}
                 cy={CIRCLE_POSITIONS[b].cy}
                 r={radiusFor(state.dimensions[b].avg_score)}
-                fill={`url(#zone-${zoneKey})`}
-                opacity={(0.35 + strength * 0.65) * (related ? 1 : 0.35)}
-                className={strength > 0.45 ? "ikigai-breathe-soft" : undefined}
-                style={{ transition: "r 500ms cubic-bezier(.22,.9,.28,1), opacity 400ms" }}
-              />
-              <circle
-                cx={CIRCLE_POSITIONS[b].cx}
-                cy={CIRCLE_POSITIONS[b].cy}
-                r={radiusFor(state.dimensions[b].avg_score)}
-                fill="none"
-                stroke="var(--ikigai)"
-                strokeOpacity={w * 0.4 * (related ? 1 : 0.3)}
-                strokeWidth={1}
-                vectorEffect="non-scaling-stroke"
-                style={{ transition: "all 500ms" }}
+                fill={DIMENSION_META[b].colorVar}
+                fillOpacity="var(--venn-fill-opacity)"
+                opacity={related ? 1 : 0.35}
+                className="ikigai-heartbeat"
+                style={{
+                  animationDelay: `${ZONE_KEYS.indexOf(zoneKey) * 0.15}s`,
+                  transition: "r 500ms cubic-bezier(.22,.9,.28,1), opacity 400ms",
+                }}
               />
             </g>
           );
         })}
+
       </g>
 
       {core > 0 && (
