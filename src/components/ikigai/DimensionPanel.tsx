@@ -138,7 +138,6 @@ export function DimensionPanel({
 
 function ScoreDots({
   value,
-  color,
   onChange,
   label,
 }: {
@@ -148,7 +147,7 @@ function ScoreDots({
   label: string;
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Score for ${label}`}>
+    <div className="flex shrink-0 items-center gap-0.5" role="group" aria-label={`Score for ${label}`}>
       {SCORES.map((score) => (
         <button
           key={score}
@@ -156,12 +155,18 @@ function ScoreDots({
           onClick={() => onChange(score)}
           aria-label={`Score ${score} of 5 for ${label}`}
           aria-pressed={value === score}
-          className="size-4 rounded-full border transition-transform hover:scale-125"
-          style={{
-            backgroundColor: score <= value ? color : "transparent",
-            borderColor: score <= value ? color : "var(--border)",
-          }}
-        />
+          className="grid size-5 place-items-center transition-transform hover:scale-125"
+        >
+          <Star
+            className="size-4"
+            style={{
+              fill: score <= value ? "var(--ikigai)" : "transparent",
+              color: score <= value ? "var(--ikigai)" : "var(--border)",
+              transition: "fill 200ms, color 200ms",
+            }}
+            strokeWidth={1.5}
+          />
+        </button>
       ))}
     </div>
   );
