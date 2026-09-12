@@ -13,6 +13,7 @@ import {
   type IkigaiState,
   type ZoneKey,
 } from "@/lib/ikigai";
+import { ZONE_INSIGHTS } from "@/lib/landing-copy";
 
 type Props = {
   state: IkigaiState;
