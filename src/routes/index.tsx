@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: LandingPage;
+  component: LandingPage,
 });
 
 const ZONE_KEYS = Object.keys(ZONES) as ZoneKey[];
