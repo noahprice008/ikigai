@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, Star, X } from "lucide-react";
 import { DIMENSION_META, type Dimension, type DimensionKey } from "@/lib/ikigai";
 import { cn } from "@/lib/utils";
 
