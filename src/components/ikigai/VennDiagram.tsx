@@ -13,6 +13,7 @@ import {
   type IkigaiState,
   type ZoneKey,
 } from "@/lib/ikigai";
+import { ZONE_INSIGHTS } from "@/lib/landing-copy";
 
 type Props = {
   state: IkigaiState;
@@ -190,6 +191,7 @@ export function VennDiagram({ state, focused }: Props) {
               transition: "opacity 400ms",
             }}
           >
+            <title>{`${zone.label} (${ZONE_INSIGHTS[zoneKey].formula}) — ${ZONE_INSIGHTS[zoneKey].feeling}`}</title>
             {zone.label}
           </text>
         );

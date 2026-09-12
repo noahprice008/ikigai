@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { DimensionPanel } from "@/components/ikigai/DimensionPanel";
@@ -125,7 +125,9 @@ function IkigaiPage() {
       <div className="mx-auto max-w-[104rem] px-5 pb-16 pt-8 sm:px-8 lg:px-12">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 pb-8 sm:items-center">
           <div className="min-w-0">
-            <p className="eyebrow text-muted-foreground">A quiet place to think</p>
+            <Link to="/" className="eyebrow text-muted-foreground transition-colors hover:text-foreground">
+              ← A quiet place to think
+            </Link>
             <h1 className="mt-2 text-3xl leading-tight sm:text-4xl">My Ikigai Map</h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
               Write what's true, score it one to five, and watch the four circles find each other.
