@@ -1,3 +1,4 @@
+import React from "react";
 import {
   CIRCLE_POSITIONS,
   DIMENSION_META,
@@ -22,12 +23,13 @@ type Props = {
 
 const ZONE_KEYS = Object.keys(ZONES) as ZoneKey[];
 
-export function VennDiagram({ state, focused }: Props) {
+export const VennDiagram = React.forwardRef<SVGSVGElement, Props>(function VennDiagram({ state, focused }, ref) {
   const core = ikigaiStrength(state);
   const warmth = coreWarmth(state);
 
   return (
     <svg
+      ref={ref}
       viewBox={`-30 -46 ${VENN.size + 60} ${VENN.size + 92}`}
       className="h-auto w-full max-w-[34rem] select-none overflow-visible"
       shapeRendering="geometricPrecision"
@@ -237,7 +239,7 @@ export function VennDiagram({ state, focused }: Props) {
       </g>
     </svg>
   );
-}
+});
 
 export function DiagramCaption({ state }: { state: IkigaiState }) {
   const core = ikigaiStrength(state);

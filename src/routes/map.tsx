@@ -5,18 +5,23 @@ import { DimensionPanel } from "@/components/ikigai/DimensionPanel";
 import { DiagramCaption, VennDiagram } from "@/components/ikigai/VennDiagram";
 import { PremiumButton, PremiumDialog } from "@/components/ikigai/PremiumDialog";
 import { TimelineSlider } from "@/components/ikigai/TimelineSlider";
+import { AnalysisPanel } from "@/components/ikigai/AnalysisPanel";
+import { ExportMenu } from "@/components/ikigai/ExportMenu";
+import { useAudio } from "@/hooks/use-audio";
 import {
   DIMENSION_ORDER,
-  HISTORY_LIMIT,
   STORAGE_KEY,
+  alignmentScore,
   average,
+  historyLimit,
   normalize,
+  stateFromSnapshot,
   sameShape,
   seedState,
   snapshotOf,
-  stateFromSnapshot,
   type DimensionKey,
   type IkigaiState,
+  type PremiumPrefs,
 } from "@/lib/ikigai";
 
 export const Route = createFileRoute("/map")({
@@ -50,7 +55,10 @@ function IkigaiPage() {
   const [note, setNote] = useState("");
   const [premiumOpen, setPremiumOpen] = useState(false);
   const noteRef = useRef(note);
+  const svgRef = useRef<SVGSVGElement>(null);
   noteRef.current = note;
+
+  const { play } = useAudio(state.premium && state.prefs.audioEnabled);
 
   useEffect(() => {
     try {
@@ -76,7 +84,14 @@ function IkigaiPage() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", state.theme === "dark");
-  }, [state.theme]);
+    document.documentElement.setAttribute("data-palette", state.prefs.palette);
+    document.documentElement.classList.toggle("paper-texture-off", !state.prefs.paperTexture);
+  }, [state.theme, state.prefs.palette, state.prefs.paperTexture]);
+
+  const prevAlignmentRef = useRef(0);
+  useEffect(() => {
+    prevAlignmentRef.current = alignmentScore(state);
+  }, []);
 
   /* record a snapshot once edits settle */
   useEffect(() => {
@@ -86,7 +101,8 @@ function IkigaiPage() {
         const snap = snapshotOf(prev, noteRef.current.trim() || undefined);
         const last = prev.history[prev.history.length - 1];
         if (last && sameShape(last, snap) && (last.note ?? "") === (snap.note ?? "")) return prev;
-        return { ...prev, history: [...prev.history, snap].slice(-HISTORY_LIMIT) };
+        const limit = historyLimit(prev.premium);
+        return { ...prev, history: [...prev.history, snap].slice(-limit) };
       });
     }, 2000);
     return () => window.clearTimeout(timer);
@@ -102,17 +118,30 @@ function IkigaiPage() {
       setCursor(null);
       setState((prev) => {
         const items = updater(prev.dimensions[key].items);
-        return {
+        const next = {
           ...prev,
           dimensions: {
             ...prev.dimensions,
             [key]: { items, avg_score: average(items) },
           },
         };
+        const score = alignmentScore(next);
+        const prevScore = prevAlignmentRef.current;
+        if (score > prevScore + 3) {
+          play("align", Math.min(1, (score - prevScore) / 10));
+        } else {
+          play(key, 0.6);
+        }
+        prevAlignmentRef.current = score;
+        return next;
       });
     },
-    [],
+    [play],
   );
+
+  const updatePrefs = useCallback((prefs: PremiumPrefs) => {
+    setState((prev) => ({ ...prev, prefs }));
+  }, []);
 
   const viewedState = useMemo(() => {
     const snap = cursor === null ? undefined : state.history[cursor];
@@ -178,6 +207,12 @@ function IkigaiPage() {
                 onRemove={(id) => mutate(key, (items) => items.filter((item) => item.id !== id))}
               />
             ))}
+
+            {state.premium && (
+              <div className="no-print">
+                <AnalysisPanel state={state} history={state.history} />
+              </div>
+            )}
           </div>
 
           <div className="order-1 lg:order-2">
@@ -186,8 +221,13 @@ function IkigaiPage() {
                 {viewingPast && (
                   <p className="eyebrow text-muted-foreground">Looking back</p>
                 )}
-                <VennDiagram state={viewedState} focused={viewingPast ? null : focused} />
+                <VennDiagram state={viewedState} focused={viewingPast ? null : focused} ref={svgRef} />
                 <DiagramCaption state={viewedState} />
+                {state.premium && (
+                  <div className="no-print w-full max-w-sm">
+                    <ExportMenu svgRef={svgRef} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -211,10 +251,12 @@ function IkigaiPage() {
         open={premiumOpen}
         onOpenChange={setPremiumOpen}
         premium={state.premium}
+        prefs={state.prefs}
         onActivate={() => {
           setState((prev) => ({ ...prev, premium: true }));
           setPremiumOpen(false);
         }}
+        onPrefsChange={updatePrefs}
       />
     </main>
   );
