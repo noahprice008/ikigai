@@ -18,7 +18,7 @@ export function useAudio(enabled: boolean) {
       if (!ctxRef.current) {
         const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (!Ctx) return;
-        ctxRef.current = new Ctx();
+        ctxRef.current = new Ctx({});
       }
       if (ctxRef.current.state === "suspended") {
         ctxRef.current.resume();
