@@ -144,7 +144,7 @@ function IkigaiPage() {
 
   const viewedState = useMemo(() => {
     const snap = cursor === null ? undefined : state.history[cursor];
-    return snap ? { ...state, dimensions: snap.avgs } : state;
+    return snap ? stateFromSnapshot(snap, state.theme) : state;
   }, [cursor, state]);
   const viewingPast = cursor !== null && state.history[cursor] !== undefined;
 
