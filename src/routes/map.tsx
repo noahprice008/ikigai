@@ -13,6 +13,7 @@ import {
   STORAGE_KEY,
   alignmentScore,
   average,
+  historyLimit,
   normalize,
   stateFromSnapshot,
   sameShape,
