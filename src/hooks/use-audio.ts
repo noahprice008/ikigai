@@ -41,7 +41,7 @@ export function useAudio(enabled: boolean) {
       if (!ctx) return;
 
       const now = ctx.currentTime;
-      const freqs = CHORDS[name];
+      const freqs = CHORDS[name]!;
       const master = ctx.createGain();
       master.gain.setValueAtTime(0, now);
       master.gain.linearRampToValueAtTime(0.0008 * intensity, now + 0.08);
