@@ -1,3 +1,4 @@
+import React from "react";
 import {
   CIRCLE_POSITIONS,
   DIMENSION_META,
