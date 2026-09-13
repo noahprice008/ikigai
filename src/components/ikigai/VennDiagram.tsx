@@ -22,7 +22,7 @@ type Props = {
 
 const ZONE_KEYS = Object.keys(ZONES) as ZoneKey[];
 
-export function VennDiagram({ state, focused }: Props) {
+export const VennDiagram = React.forwardRef<SVGSVGElement, Props>(function VennDiagram({ state, focused }, ref) {
   const core = ikigaiStrength(state);
   const warmth = coreWarmth(state);
 
