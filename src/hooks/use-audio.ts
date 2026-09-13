@@ -11,7 +11,7 @@ const CHORDS: Record<string, number[]> = {
 
 export function useAudio(enabled: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
-  const resumeRef = useRef<() => void>();
+  const resumeRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const unlock = () => {
