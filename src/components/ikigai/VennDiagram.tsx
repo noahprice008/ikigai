@@ -29,6 +29,7 @@ export const VennDiagram = React.forwardRef<SVGSVGElement, Props>(function VennD
 
   return (
     <svg
+      ref={ref}
       viewBox={`-30 -46 ${VENN.size + 60} ${VENN.size + 92}`}
       className="h-auto w-full max-w-[34rem] select-none overflow-visible"
       shapeRendering="geometricPrecision"
