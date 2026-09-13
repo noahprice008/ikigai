@@ -1,4 +1,4 @@
-import { Check, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, ShieldCheck, Sparkles, Settings } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -6,6 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PremiumSettings } from "./PremiumSettings";
+import type { PremiumPrefs } from "@/lib/ikigai";
 
 const FEATURES: { title: string; detail: string }[] = [
   { title: "Aesthetic customisation", detail: "Palettes, paper textures and typography that feel like yours." },
@@ -20,40 +22,49 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   premium: boolean;
+  prefs: PremiumPrefs;
   onActivate: () => void;
+  onPrefsChange: (prefs: PremiumPrefs) => void;
 };
 
-export function PremiumDialog({ open, onOpenChange, premium, onActivate }: Props) {
+export function PremiumDialog({ open, onOpenChange, premium, prefs, onActivate, onPrefsChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <p className="eyebrow text-muted-foreground">Sanctuary</p>
           <DialogTitle className="font-display text-2xl">
-            Buy your privacy, not a bigger feed
+            {premium ? "Premium settings" : "Buy your privacy, not a bigger feed"}
           </DialogTitle>
           <DialogDescription className="leading-relaxed">
-            No ads, no trackers, no selling of your reflections — ever. Your subscription is what keeps
-            this place quiet and independent. €2.49 a month.
+            {premium
+              ? "Your premium features are active. Tune the mood, sound and texture below."
+              : "No ads, no trackers, no selling of your reflections — ever. Your subscription is what keeps this place quiet and independent. €2.49 a month."}
           </DialogDescription>
         </DialogHeader>
 
-        <ul className="mt-1 space-y-3">
-          {FEATURES.map((feature) => (
-            <li key={feature.title} className="flex gap-3">
-              <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-              <div>
-                <p className="text-sm font-semibold">{feature.title}</p>
-                <p className="text-sm leading-relaxed text-muted-foreground">{feature.detail}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {premium ? (
+          <PremiumSettings prefs={prefs} onChange={onPrefsChange} />
+        ) : (
+          <>
+            <ul className="mt-1 space-y-3">
+              {FEATURES.map((feature) => (
+                <li key={feature.title} className="flex gap-3">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                  <div>
+                    <p className="text-sm font-semibold">{feature.title}</p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{feature.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
 
-        <div className="mt-4 flex items-center gap-2 rounded-2xl border border-dashed px-4 py-3 text-xs leading-relaxed text-muted-foreground">
-          <ShieldCheck className="size-4 shrink-0" aria-hidden />
-          Data stays on your device by default. Cancel any time; your history remains yours.
-        </div>
+            <div className="mt-4 flex items-center gap-2 rounded-2xl border border-dashed px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+              <ShieldCheck className="size-4 shrink-0" aria-hidden />
+              Data stays on your device by default. Cancel any time; your history remains yours.
+            </div>
+          </>
+        )}
 
         {premium ? (
           <p className="mt-2 text-center text-sm text-muted-foreground">
@@ -81,7 +92,7 @@ export function PremiumButton({ premium, onClick }: { premium: boolean; onClick:
       onClick={onClick}
       className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border bg-card px-4 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground"
     >
-      <Sparkles className="size-3.5" aria-hidden />
+      {premium ? <Settings className="size-3.5" aria-hidden /> : <Sparkles className="size-3.5" aria-hidden />}
       {premium ? "Premium" : "Upgrade"}
     </button>
   );
