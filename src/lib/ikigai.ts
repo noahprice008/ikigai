@@ -4,6 +4,27 @@ export type Item = { id: string; label: string; score: number };
 
 export type Dimension = { items: Item[]; avg_score: number };
 
+export type PaletteKey = "editorial" | "moss" | "dusk" | "ink" | "bloom";
+
+export const PALETTE_ORDER: PaletteKey[] = ["editorial", "moss", "dusk", "ink", "bloom"];
+
+export const PALETTE_META: Record<
+  PaletteKey,
+  { name: string; description: string }
+> = {
+  editorial: { name: "Editorial", description: "Warm paper and amber ink." },
+  moss: { name: "Moss", description: "Quiet forest greens and soft stone." },
+  dusk: { name: "Dusk", description: "Deep indigo with rose-gold highlights." },
+  ink: { name: "Ink", description: "High-contrast monochrome for focus." },
+  bloom: { name: "Bloom", description: "Cherry blossom and pale clay." },
+};
+
+export type PremiumPrefs = {
+  palette: PaletteKey;
+  audioEnabled: boolean;
+  paperTexture: boolean;
+};
+
 export type Snapshot = {
   at: number;
   avgs: Record<DimensionKey, number>;
@@ -16,6 +37,7 @@ export type IkigaiState = {
   theme: "light" | "dark";
   history: Snapshot[];
   premium: boolean;
+  prefs: PremiumPrefs;
 };
 
 export const DIMENSION_ORDER: DimensionKey[] = ["love", "good_at", "needs", "paid_for"];
@@ -79,6 +101,11 @@ export function emptyState(): IkigaiState {
     theme: "light",
     history: [],
     premium: false,
+    prefs: {
+      palette: "editorial",
+      audioEnabled: true,
+      paperTexture: true,
+    },
   };
 }
 
@@ -110,6 +137,12 @@ export function normalize(raw: unknown): IkigaiState | null {
   const state = emptyState();
   if (input.theme === "dark" || input.theme === "light") state.theme = input.theme;
   state.premium = input.premium === true;
+  if (input.prefs && typeof input.prefs === "object") {
+    const p = input.prefs as Partial<PremiumPrefs>;
+    if (PALETTE_ORDER.includes(p.palette as PaletteKey)) state.prefs.palette = p.palette as PaletteKey;
+    if (typeof p.audioEnabled === "boolean") state.prefs.audioEnabled = p.audioEnabled;
+    if (typeof p.paperTexture === "boolean") state.prefs.paperTexture = p.paperTexture;
+  }
   if (Array.isArray(input.history)) {
     state.history = input.history
       .filter((snap) => snap && typeof snap.at === "number")
@@ -232,6 +265,11 @@ function coerceRecord(raw: unknown): Record<DimensionKey, number> {
 }
 
 export const HISTORY_LIMIT = 60;
+export const HISTORY_LIMIT_PREMIUM = 2000;
+
+export function historyLimit(premium: boolean): number {
+  return premium ? HISTORY_LIMIT_PREMIUM : HISTORY_LIMIT;
+}
 
 export function snapshotOf(state: IkigaiState, note?: string): Snapshot {
   const avgs = {} as Record<DimensionKey, number>;
@@ -299,4 +337,41 @@ export function coreWarmth(state: IkigaiState): number {
     sum += clamp01(radiusFor(dim.avg_score) / (VENN.offset + 26));
   }
   return clamp01(sum / 4);
+}
+
+/* ---------- analysis ---------- */
+
+export function alignmentScore(state: IkigaiState): number {
+  const core = ikigaiStrength(state);
+  const zones = (Object.keys(ZONES) as ZoneKey[]).map((z) => zoneStrength(state, z));
+  const zoneAvg = zones.reduce((a, b) => a + b, 0) / zones.length;
+  return Math.round((core * 0.5 + zoneAvg * 0.5) * 100);
+}
+
+export function driftAlert(state: IkigaiState): { key: DimensionKey; gap: number } | null {
+  const avgs = DIMENSION_ORDER.map((key) => ({ key, avg: state.dimensions[key].avg_score }));
+  const max = Math.max(...avgs.map((d) => d.avg));
+  const min = Math.min(...avgs.map((d) => d.avg));
+  if (max === 0) return null;
+  const weakest = avgs.find((d) => d.avg === min)!;
+  return { key: weakest.key, gap: Math.round((max - min) * 10) / 10 };
+}
+
+export function trendFor(history: Snapshot[], key: DimensionKey): "rising" | "falling" | "steady" {
+  if (history.length < 2) return "steady";
+  const first = history[0]!.avgs[key];
+  const last = history[history.length - 1]!.avgs[key];
+  const delta = last - first;
+  if (delta > 0.25) return "rising";
+  if (delta < -0.25) return "falling";
+  return "steady";
+}
+
+export function zoneInsightFor(state: IkigaiState): { zone: ZoneKey; strength: number } | null {
+  let best: { zone: ZoneKey; strength: number } | null = null;
+  for (const key of Object.keys(ZONES) as ZoneKey[]) {
+    const s = zoneStrength(state, key);
+    if (!best || s > best.strength) best = { zone: key, strength: s };
+  }
+  return best;
 }
