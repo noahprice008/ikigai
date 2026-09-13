@@ -239,7 +239,7 @@ export const VennDiagram = React.forwardRef<SVGSVGElement, Props>(function VennD
       </g>
     </svg>
   );
-}
+});
 
 export function DiagramCaption({ state }: { state: IkigaiState }) {
   const core = ikigaiStrength(state);
