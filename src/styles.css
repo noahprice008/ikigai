@@ -219,3 +219,117 @@
 @utility ikigai-heartbeat {
   animation: ikigai-heartbeat 4.6s cubic-bezier(0.4, 0, 0.5, 1) infinite;
 }
+
+/* ---------- premium palettes ---------- */
+/*
+ * Palettes shift the four dimension colours and the central Ikigai glow.
+ * Light/dark base surfaces stay editorial unless the palette explicitly
+ * overrides them. Default (:root / .dark) is the Editorial palette.
+ */
+
+[data-palette="moss"] {
+  --love: oklch(0.62 0.14 142);
+  --good-at: oklch(0.72 0.13 82);
+  --needs: oklch(0.6 0.1 168);
+  --paid-for: oklch(0.58 0.11 202);
+  --ikigai: oklch(0.74 0.13 120);
+  --primary: oklch(0.52 0.12 142);
+}
+
+[data-palette="moss"].dark {
+  --love: oklch(0.74 0.15 142);
+  --good-at: oklch(0.82 0.13 82);
+  --needs: oklch(0.72 0.12 168);
+  --paid-for: oklch(0.7 0.12 202);
+  --ikigai: oklch(0.84 0.14 120);
+  --primary: oklch(0.78 0.12 142);
+}
+
+[data-palette="dusk"] {
+  --love: oklch(0.6 0.16 12);
+  --good-at: oklch(0.62 0.18 295);
+  --needs: oklch(0.58 0.14 240);
+  --paid-for: oklch(0.65 0.15 200);
+  --ikigai: oklch(0.72 0.18 300);
+  --primary: oklch(0.55 0.16 270);
+}
+
+[data-palette="dusk"].dark {
+  --love: oklch(0.72 0.18 12);
+  --good-at: oklch(0.74 0.2 295);
+  --needs: oklch(0.7 0.16 240);
+  --paid-for: oklch(0.76 0.17 200);
+  --ikigai: oklch(0.82 0.2 300);
+  --primary: oklch(0.78 0.18 270);
+}
+
+[data-palette="ink"] {
+  --love: oklch(0.55 0.05 45);
+  --good-at: oklch(0.62 0.04 220);
+  --needs: oklch(0.5 0.04 160);
+  --paid-for: oklch(0.58 0.04 260);
+  --ikigai: oklch(0.7 0.06 80);
+  --primary: oklch(0.45 0.04 45);
+}
+
+[data-palette="ink"].dark {
+  --love: oklch(0.78 0.06 45);
+  --good-at: oklch(0.82 0.05 220);
+  --needs: oklch(0.76 0.05 160);
+  --paid-for: oklch(0.8 0.05 260);
+  --ikigai: oklch(0.88 0.07 80);
+  --primary: oklch(0.85 0.06 45);
+}
+
+[data-palette="bloom"] {
+  --love: oklch(0.66 0.15 12);
+  --good-at: oklch(0.7 0.13 75);
+  --needs: oklch(0.62 0.12 165);
+  --paid-for: oklch(0.6 0.14 340);
+  --ikigai: oklch(0.78 0.16 24);
+  --primary: oklch(0.58 0.14 18);
+}
+
+[data-palette="bloom"].dark {
+  --love: oklch(0.78 0.17 12);
+  --good-at: oklch(0.82 0.15 75);
+  --needs: oklch(0.74 0.14 165);
+  --paid-for: oklch(0.74 0.16 340);
+  --ikigai: oklch(0.88 0.18 24);
+  --primary: oklch(0.84 0.16 18);
+}
+
+@utility paper-grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: radial-gradient(
+      var(--color-border) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 14px 14px;
+  }
+}
+
+@utility paper-texture-off {
+  &::after {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
