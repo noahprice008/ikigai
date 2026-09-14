@@ -156,7 +156,7 @@ function IkigaiPage() {
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 pb-7 sm:items-center sm:pb-8">
           <div className="min-w-0">
             <Link to="/" aria-label="Ikigai home" className="inline-flex min-w-0 transition-opacity hover:opacity-80">
-              <BrandMark />
+              <BrandMark label={false} />
             </Link>
             <h1 className="mt-4 text-3xl leading-tight sm:text-4xl">My Ikigai Map</h1>
             <p className="mt-2 hidden max-w-xl text-sm leading-relaxed text-muted-foreground sm:block">

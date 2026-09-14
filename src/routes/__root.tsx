@@ -77,6 +77,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#9a5738" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Ikigai" },
       { title: "My Ikigai Map" },
       { name: "description", content: "A calm, private reflection map for finding what makes life worth living." },
       { name: "author", content: "My Ikigai Map" },
