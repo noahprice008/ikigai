@@ -71,7 +71,7 @@ export function DimensionPanel({
         {dimension.items.map((item) => (
           <li
             key={item.id}
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 sm:gap-3"
+            className="grid grid-cols-1 gap-2 rounded-xl bg-secondary/60 px-3 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-3 sm:py-2"
           >
             <input
               value={item.label}
@@ -79,7 +79,7 @@ export function DimensionPanel({
               aria-label="Item name"
               className="min-w-0 truncate border-0 border-b border-transparent bg-transparent text-sm outline-none transition-colors focus:border-ring"
             />
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex shrink-0 items-center justify-between gap-1.5 sm:justify-start">
               <ScoreDots
                 value={item.score}
                 color={meta.colorVar}
@@ -104,7 +104,7 @@ export function DimensionPanel({
         )}
       </ul>
 
-      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t pt-4 sm:gap-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 border-t pt-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <input
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -115,7 +115,7 @@ export function DimensionPanel({
           aria-label={`Add to ${meta.title}`}
           className="min-w-0 rounded-lg border bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-ring"
         />
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-start">
           <ScoreDots
             value={draftScore}
             color={meta.colorVar}
@@ -126,7 +126,7 @@ export function DimensionPanel({
             type="button"
             onClick={submit}
             aria-label={`Add item to ${meta.title}`}
-            className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 sm:size-8"
           >
             <Plus className="size-4" />
           </button>
@@ -147,7 +147,7 @@ function ScoreDots({
   label: string;
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-0.5" role="group" aria-label={`Score for ${label}`}>
+    <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Score for ${label}`}>
       {SCORES.map((score) => (
         <button
           key={score}
@@ -155,7 +155,7 @@ function ScoreDots({
           onClick={() => onChange(score)}
           aria-label={`Score ${score} of 5 for ${label}`}
           aria-pressed={value === score}
-          className="grid size-5 place-items-center transition-transform hover:scale-125"
+          className="grid size-7 place-items-center transition-transform hover:scale-110 sm:size-5 sm:hover:scale-125"
         >
           <Star
             className="size-4"

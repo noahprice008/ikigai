@@ -33,9 +33,9 @@ export function useAudio(enabled: boolean) {
     };
   }, []);
 
-  const play = useCallback(
-    (name: keyof typeof CHORDS, intensity = 0.5) => {
-      if (!enabled) return;
+  const sound = useCallback(
+    (name: keyof typeof CHORDS, intensity = 0.5, force = false) => {
+      if (!enabled && !force) return;
       resumeRef.current?.();
       const ctx = ctxRef.current;
       if (!ctx) return;
@@ -44,7 +44,7 @@ export function useAudio(enabled: boolean) {
       const freqs = CHORDS[name]!;
       const master = ctx.createGain();
       master.gain.setValueAtTime(0, now);
-      master.gain.linearRampToValueAtTime(0.0008 * intensity, now + 0.08);
+      master.gain.linearRampToValueAtTime(0.22 * intensity, now + 0.06);
       master.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
       master.connect(ctx.destination);
 
@@ -54,7 +54,7 @@ export function useAudio(enabled: boolean) {
         osc.frequency.setValueAtTime(freq, now);
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.12 / freqs.length, now + 0.05 + index * 0.02);
+        gain.gain.linearRampToValueAtTime(0.2 / freqs.length, now + 0.05 + index * 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2 + index * 0.05);
         osc.connect(gain);
         gain.connect(master);
@@ -65,5 +65,11 @@ export function useAudio(enabled: boolean) {
     [enabled],
   );
 
-  return { play };
+  const play = useCallback(
+    (name: keyof typeof CHORDS, intensity = 0.5) => sound(name, intensity),
+    [sound],
+  );
+  const preview = useCallback(() => sound("glow", 0.75, true), [sound]);
+
+  return { play, preview };
 }

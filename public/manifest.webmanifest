@@ -1,0 +1,14 @@
+{
+  "name": "My Ikigai Map",
+  "short_name": "Ikigai",
+  "description": "A calm, private reflection map for finding what makes life worth living.",
+  "start_url": "/map",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f2e8",
+  "theme_color": "#9a5738",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

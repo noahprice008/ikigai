@@ -129,6 +129,13 @@
     text-rendering: optimizeLegibility;
   }
 
+  button,
+  a,
+  input,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   svg {
     shape-rendering: geometricPrecision;
   }
@@ -138,6 +145,17 @@
   h3 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
