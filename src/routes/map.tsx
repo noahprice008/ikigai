@@ -8,6 +8,7 @@ import { TimelineSlider } from "@/components/ikigai/TimelineSlider";
 import { AnalysisPanel } from "@/components/ikigai/AnalysisPanel";
 import { ExportMenu } from "@/components/ikigai/ExportMenu";
 import { useAudio } from "@/hooks/use-audio";
+import { BrandMark } from "@/components/ikigai/BrandMark";
 import {
   DIMENSION_ORDER,
   STORAGE_KEY,
@@ -58,7 +59,7 @@ function IkigaiPage() {
   const svgRef = useRef<SVGSVGElement>(null);
   noteRef.current = note;
 
-  const { play } = useAudio(state.premium && state.prefs.audioEnabled);
+  const { play, preview } = useAudio(state.premium && state.prefs.audioEnabled);
 
   useEffect(() => {
     try {
@@ -152,18 +153,18 @@ function IkigaiPage() {
   return (
     <main className="min-h-screen paper-grain">
       <div className="mx-auto max-w-[104rem] px-5 pb-16 pt-8 sm:px-8 lg:px-12">
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 pb-8 sm:items-center">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 pb-7 sm:items-center sm:pb-8">
           <div className="min-w-0">
-            <Link to="/" className="eyebrow text-muted-foreground transition-colors hover:text-foreground">
-              ← A quiet place to think
+            <Link to="/" aria-label="Ikigai home" className="inline-flex min-w-0 transition-opacity hover:opacity-80">
+              <BrandMark />
             </Link>
-            <h1 className="mt-2 text-3xl leading-tight sm:text-4xl">My Ikigai Map</h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            <h1 className="mt-4 text-3xl leading-tight sm:text-4xl">My Ikigai Map</h1>
+            <p className="mt-2 hidden max-w-xl text-sm leading-relaxed text-muted-foreground sm:block">
               Write what's true, score it one to five, and watch the four circles find each other.
               Everything saves itself.
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <PremiumButton premium={state.premium} onClick={() => setPremiumOpen(true)} />
             <button
               type="button"
@@ -217,7 +218,7 @@ function IkigaiPage() {
 
           <div className="order-1 lg:order-2">
             <div className="lg:sticky lg:top-8">
-              <div className="flex flex-col items-center gap-5 rounded-3xl border bg-canvas px-3 py-8 shadow-soft sm:px-8">
+               <div className="flex flex-col items-center gap-4 rounded-2xl border bg-canvas px-2 py-5 shadow-soft sm:gap-5 sm:rounded-3xl sm:px-8 sm:py-8">
                 {viewingPast && (
                   <p className="eyebrow text-muted-foreground">Looking back</p>
                 )}
@@ -257,6 +258,7 @@ function IkigaiPage() {
           setPremiumOpen(false);
         }}
         onPrefsChange={updatePrefs}
+        onAudioPreview={preview}
       />
     </main>
   );

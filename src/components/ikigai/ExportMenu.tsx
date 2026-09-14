@@ -88,11 +88,11 @@ export function ExportMenu({ svgRef }: { svgRef: React.RefObject<SVGSVGElement |
   }, [svgToPng]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="grid grid-cols-3 gap-2">
       <button
         type="button"
         onClick={downloadPng}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border bg-card px-3 text-xs font-semibold shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-full border bg-card px-2 text-center text-xs font-semibold shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground sm:h-9 sm:min-h-0 sm:px-3"
       >
         {status === "downloaded" ? <Check className="size-3.5" /> : <Download className="size-3.5" />}
         Save image
@@ -100,7 +100,7 @@ export function ExportMenu({ svgRef }: { svgRef: React.RefObject<SVGSVGElement |
       <button
         type="button"
         onClick={printMap}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border bg-card px-3 text-xs font-semibold shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-full border bg-card px-2 text-center text-xs font-semibold shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground sm:h-9 sm:min-h-0 sm:px-3"
       >
         <Printer className="size-3.5" />
         Print / PDF
@@ -108,7 +108,7 @@ export function ExportMenu({ svgRef }: { svgRef: React.RefObject<SVGSVGElement |
       <button
         type="button"
         onClick={shareMap}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border bg-card px-3 text-xs font-semibold shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-full border bg-card px-2 text-center text-xs font-semibold shadow-soft transition-colors hover:bg-accent hover:text-accent-foreground sm:h-9 sm:min-h-0 sm:px-3"
       >
         {status === "copied" ? <Check className="size-3.5" /> : <Share2 className="size-3.5" />}
         {status === "copied" ? "Copied" : "Share"}

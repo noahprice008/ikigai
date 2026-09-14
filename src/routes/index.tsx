@@ -16,6 +16,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { BrandMark } from "@/components/ikigai/BrandMark";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -76,8 +77,8 @@ function LandingPage() {
   return (
     <main className="min-h-screen paper-grain">
       <div className="mx-auto max-w-6xl px-5 pb-24 pt-8 sm:px-8">
-        <header className="flex items-center justify-between gap-4">
-          <p className="eyebrow text-muted-foreground">生き甲斐 · Ikigai</p>
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+          <BrandMark />
           <button
             type="button"
             onClick={toggleTheme}
@@ -89,7 +90,7 @@ function LandingPage() {
         </header>
 
         {/* Hero */}
-        <section className="py-16 sm:py-24">
+        <section className="py-14 sm:py-24">
           <h1 className="max-w-3xl text-4xl leading-[1.1] sm:text-6xl">
             Discover your Ikigai: your reason for being.
           </h1>
@@ -97,17 +98,17 @@ function LandingPage() {
             Map your holistic spectrum of purpose. From your morning coffee to your life's mission,
             find the balance that makes life worth living.
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
+          <div className="mt-9 grid gap-3 sm:flex sm:flex-wrap sm:items-center">
             <Link
               to="/map"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lift transition-opacity hover:opacity-90"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lift transition-opacity hover:opacity-90"
             >
               Begin your map
               <ArrowRight className="size-4" />
             </Link>
             <a
               href="#pillars"
-              className="inline-flex items-center rounded-full border bg-card px-6 py-3.5 text-sm font-semibold shadow-soft transition-colors hover:bg-accent"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border bg-card px-6 py-3.5 text-sm font-semibold shadow-soft transition-colors hover:bg-accent"
             >
               How it works
             </a>

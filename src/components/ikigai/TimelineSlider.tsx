@@ -92,8 +92,8 @@ export function TimelineSlider({
             </p>
           ) : (
             <>
-              <div className="flex items-baseline justify-between gap-4">
-                <p className="text-sm font-semibold">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
+                <p className="min-w-0 truncate text-sm font-semibold">
                   {active ? formatWhen(active.at) : "Now — live reflection"}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -142,8 +142,8 @@ export function TimelineSlider({
                 aria-label="Scrub through your reflection history"
                 className="mt-2"
               />
-              <div className="mt-2 flex justify-between text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                <span>{visible[0] ? formatWhen(visible[0].at) : "start"}</span>
+              <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-3 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                <span className="truncate">{visible[0] ? formatWhen(visible[0].at) : "start"}</span>
                 <span>now</span>
               </div>
 

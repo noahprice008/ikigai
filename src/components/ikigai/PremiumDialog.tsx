@@ -25,9 +25,10 @@ type Props = {
   prefs: PremiumPrefs;
   onActivate: () => void;
   onPrefsChange: (prefs: PremiumPrefs) => void;
+  onAudioPreview: () => void;
 };
 
-export function PremiumDialog({ open, onOpenChange, premium, prefs, onActivate, onPrefsChange }: Props) {
+export function PremiumDialog({ open, onOpenChange, premium, prefs, onActivate, onPrefsChange, onAudioPreview }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-lg">
@@ -44,7 +45,7 @@ export function PremiumDialog({ open, onOpenChange, premium, prefs, onActivate, 
         </DialogHeader>
 
         {premium ? (
-          <PremiumSettings prefs={prefs} onChange={onPrefsChange} />
+          <PremiumSettings prefs={prefs} onChange={onPrefsChange} onAudioPreview={onAudioPreview} />
         ) : (
           <>
             <ul className="mt-1 space-y-3">

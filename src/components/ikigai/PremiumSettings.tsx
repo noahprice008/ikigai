@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils";
 type Props = {
   prefs: PremiumPrefs;
   onChange: (prefs: PremiumPrefs) => void;
+  onAudioPreview: () => void;
 };
 
-export function PremiumSettings({ prefs, onChange }: Props) {
+export function PremiumSettings({ prefs, onChange, onAudioPreview }: Props) {
   const set = <K extends keyof PremiumPrefs>(key: K, value: PremiumPrefs[K]) => {
     onChange({ ...prefs, [key]: value });
   };
@@ -63,7 +64,12 @@ export function PremiumSettings({ prefs, onChange }: Props) {
         </div>
         <button
           type="button"
-          onClick={() => set("audioEnabled", !prefs.audioEnabled)}
+          onClick={() => {
+            const enabled = !prefs.audioEnabled;
+            set("audioEnabled", enabled);
+            if (enabled) onAudioPreview();
+          }}
+          aria-label="Audio ambience"
           className={cn(
             "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
             prefs.audioEnabled ? "bg-primary" : "bg-muted",
